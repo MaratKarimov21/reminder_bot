@@ -1,5 +1,5 @@
 module GigaChat
-  module Operations
+  module Operation
     class GetAccessToken < Trailblazer::Operation
       step :request_access_token
       step :extract_access_token

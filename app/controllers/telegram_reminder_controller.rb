@@ -1,6 +1,11 @@
 class TelegramReminderController < Telegram::Bot::UpdatesController
   def start!(*)
-    respond_with :message, text: 'Hello!'
+    debugger
+    result = ::User::Operation::Create.wtf?(params: start_params)
+
+    if result.success?
+      respond_with :message, text: 'Hello!'
+    end
   end
 
   def message(message)
@@ -11,9 +16,26 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     # puts from # {"id"=>1142352607, "is_bot"=>false, "first_name"=>"Марат", "last_name"=>"Каримов", "username"=>"MaRat_2112", "language_code"=>"ru"}
     # puts message["text"]
     # respond_with :message, text: "Иди нахуй"
+    puts message
+    # result =  Reminder::Operation::Create.wtf?(message: message["text"], params: { username: from["username"] })
+    # if result.success?
+    #   respond_with :message, text: result[:message]
+    # else
+    #   signal, (ctx, _) = result
+    #   # puts signal.inspect
+    # end
 
-    result =  GigaChat::Operations::Request.(params: { message: message["text"] })
-    puts result[:reply]
-    respond_with :message, text: result[:reply]
+    # result = GigaChat::Operation::Request.( message: message["text"] })
+    # if result.success?
+    #   respond_with :message, text: result[:reply]
+    # else
+    #   signal, (ctx, _) = result
+    #   puts signal.inspect
+    # end
+  end
+
+  def start_params
+    from[:telegram_id] = from.delete("id")
+    from
   end
 end
