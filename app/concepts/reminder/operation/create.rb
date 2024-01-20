@@ -1,5 +1,7 @@
 class Reminder::Operation::Create < Trailblazer::Operation
-  step Subprocess(Reminder::Operation::Preprocess), In() => {message: :string}, Out() => {string: :message}
+  pass :extract_message
+  pass Subprocess(SaluteSpeech::Operation::Request)
+  step Subprocess(Reminder::Operation::Preprocess), In() => {reply: :string}, Out() => {string: :message}
   step Subprocess(GigaChat::Operation::Request)
   step Model(User, :find_by, :username)
   step :create_reminder
@@ -8,6 +10,10 @@ class Reminder::Operation::Create < Trailblazer::Operation
   # step :send_reminder
 
   private
+
+  def extract_message(ctx, params:, **)
+    ctx[:message] = params[:message]
+  end
 
   def create_reminder(ctx, reply:, **)
     puts (reply["date"] + " " + reply["time"])

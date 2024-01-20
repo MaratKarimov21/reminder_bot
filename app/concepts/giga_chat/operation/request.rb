@@ -1,6 +1,7 @@
 module GigaChat
   module Operation
     class Request < Trailblazer::Operation
+      step :prepare_params
       step Subprocess(GetAccessToken)
       step :prepare_body
       step :prepare_headers
@@ -8,6 +9,11 @@ module GigaChat
       step :extract_response
 
       private
+
+      def prepare_params(ctx, params:, message: nil, reply: nil, **)
+        ctx[:message] = params[:message] || reply unless message
+        true
+      end
 
       def prepare_body(ctx, message:, **)
         ctx[:body] = {
