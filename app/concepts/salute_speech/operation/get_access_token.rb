@@ -8,7 +8,10 @@ module SaluteSpeech
 
       def request_access_token(ctx, **)
         puts "request_access_token"
-        ctx[:response] = HTTParty.post(url, body: body, headers: headers).body
+        ctx[:response] = Rails.cache.fetch("salute_speech_access_token", expires_in: 1.hour) do
+          HTTParty.post(url, body: body, headers: headers).body
+        end
+        true
       end
 
       def extract_access_token(ctx, **)

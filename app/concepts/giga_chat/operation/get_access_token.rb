@@ -7,8 +7,12 @@ module GigaChat
       private
 
       def request_access_token(ctx, **)
-        puts "request_access_token"
-        ctx[:response] = HTTParty.post(url, body: body, headers: headers).body
+        puts "request_access_token ggc"
+        ctx[:response] = Rails.cache.fetch("giga_chat_access_token", expires_in: 1.hour) do
+          HTTParty.post(url, body: body, headers: headers).body
+        end
+        puts "access_token_set"
+        true
       end
 
       def extract_access_token(ctx, **)
