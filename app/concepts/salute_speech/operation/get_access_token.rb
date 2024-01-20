@@ -1,6 +1,6 @@
 module SaluteSpeech
   module Operation
-    class GetAccessToken < Trailblazer::Operation
+    class GetAccessToken < ApplicationOperation
       step :request_access_token
       step :extract_access_token
 

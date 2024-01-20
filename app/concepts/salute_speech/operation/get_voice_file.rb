@@ -1,4 +1,4 @@
-class SaluteSpeech::Operation::GetVoiceFile < Trailblazer::Operation
+class SaluteSpeech::Operation::GetVoiceFile < ApplicationOperation
   step :prepare_file_data
   step :prepare_file_url
   step :get_file_data

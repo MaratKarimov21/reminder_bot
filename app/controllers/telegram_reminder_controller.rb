@@ -8,6 +8,7 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
   end
 
   def message(message)
+    Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
     # puts message["file_id"].inspect
     # 'https://api.telegram.org/file/bot6873736492:AAFzurnuY2RKjCYSymvl5ReUYi6TF-OGAWI/voice/file_0.oga'
 

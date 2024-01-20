@@ -1,4 +1,4 @@
-class SaluteSpeech::Operation::Request < Trailblazer::Operation
+class SaluteSpeech::Operation::Request < ApplicationOperation
   step :validate_params
   step Subprocess(SaluteSpeech::Operation::GetAccessToken)
   step Subprocess(SaluteSpeech::Operation::GetVoiceFile)

@@ -1,14 +1,15 @@
 module GigaChat
   module Operation
-    class GetAccessToken < Trailblazer::Operation
+    class GetAccessToken < ApplicationOperation
       step :request_access_token
       step :extract_access_token
 
       private
 
       def request_access_token(ctx, **)
-        puts "request_access_token ggc"
+
         ctx[:response] = Rails.cache.fetch("giga_chat_access_token", expires_in: 1.hour) do
+          puts "request_access_token ggc"
           HTTParty.post(url, body: body, headers: headers).body
         end
         puts "access_token_set"

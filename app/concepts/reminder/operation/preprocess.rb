@@ -1,4 +1,4 @@
-class Reminder::Operation::Preprocess < Trailblazer::Operation
+class Reminder::Operation::Preprocess < ApplicationOperation
   WEEKDAYS_MAP = {
     monday: %w[понедельник понедельника пн],
     tuesday: %w[вторник вторника вт],

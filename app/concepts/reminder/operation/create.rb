@@ -1,7 +1,13 @@
-class Reminder::Operation::Create < Trailblazer::Operation
+class Reminder::Operation::Create < ApplicationOperation
   pass :extract_message
-  pass Subprocess(SaluteSpeech::Operation::Request)
-  step Subprocess(Reminder::Operation::Preprocess), In() => {reply: :string}, Out() => {string: :message}
+  pass Subprocess(SaluteSpeech::Operation::Request), Out() => ->(ctx, **) do
+    return {} unless ctx[:reply]
+
+    { # you always have to return a hash from a callable!
+      message: ctx[:reply]
+    }
+  end
+  step Subprocess(Reminder::Operation::Preprocess), In() => {message: :string}, Out() => {string: :message}
   step Subprocess(GigaChat::Operation::Request)
   step Model(User, :find_by, :username)
   step :create_reminder

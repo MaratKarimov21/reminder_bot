@@ -1,6 +1,6 @@
 module GigaChat
   module Operation
-    class Request < Trailblazer::Operation
+    class Request < ApplicationOperation
       step :prepare_params
       step Subprocess(GetAccessToken)
       step :prepare_body
