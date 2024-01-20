@@ -11,12 +11,13 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
   def message(message)
     # puts message["file_id"].inspect
     # 'https://api.telegram.org/file/bot6873736492:AAFzurnuY2RKjCYSymvl5ReUYi6TF-OGAWI/voice/file_0.oga'
-    # # file = Telegram.bots[:reminder].get_file(file_id: message["voice"]["file_id"])
+
+    result = SaluteSpeech::Operation::Request.wtf?(params: { file_id: message["voice"]["file_id"] })
+    respond_with :message, text: result[:reply]
     # puts file
     # puts from # {"id"=>1142352607, "is_bot"=>false, "first_name"=>"Марат", "last_name"=>"Каримов", "username"=>"MaRat_2112", "language_code"=>"ru"}
     # puts message["text"]
     # respond_with :message, text: "Иди нахуй"
-    puts message
     # result =  Reminder::Operation::Create.wtf?(message: message["text"], params: { username: from["username"] })
     # if result.success?
     #   respond_with :message, text: result[:message]
