@@ -20,6 +20,7 @@ module ReminderBot
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.time_zone = 'Moscow'
+    config.i18n.default_locale = :ru
     config.active_record.default_timezone = :local
     config.active_job.queue_adapter = :good_job
   end
