@@ -26,6 +26,8 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
       # puts signal.inspect
     end
 
+    respond_with :message, text: result[:debug].to_json
+
     # result = Parser::Operation::Request.wtf?(params: { file_id: message.dig("voice", "file_id"), message: message["text"] } )
     # if result.success?
     #   respond_with :message, text: result[:reply]

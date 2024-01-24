@@ -5,7 +5,11 @@ class ApplicationOperation < Trailblazer::Operation
     ctx[:debug] = {} unless ctx[:debug]
   end
 
-  def debug(ctx, **)
+  def debug_step(ctx, **)
     debugger
+  end
+
+  def debugify(ctx, key, value)
+    ctx[:debug][key] = value
   end
 end

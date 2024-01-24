@@ -48,8 +48,10 @@ module Parser
       end
 
       def extract_response(ctx, response:, **)
-        ctx[:raw_reply] = JSON.parse(response).dig("choices", 0, "message", "content")
-        ctx[:reply] = JSON.parse(ctx[:raw_reply])
+        ctx[:raw_reply] = JSON.parse(response).dig("choices", 0, "message", "content").tap do |it|
+          debugify(ctx, :parser_raw_reply, it)
+        end
+        ctx[:reply] = JSON.parse(ctx[:raw_reply]).tap { |it| debugify(ctx, :parser_reply, it) }
       rescue ParseError
         nil
       end

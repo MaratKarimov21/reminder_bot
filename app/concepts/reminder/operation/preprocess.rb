@@ -23,21 +23,20 @@ class Reminder::Operation::Preprocess < ApplicationOperation
   RELATIVE_TIME_REGEXP = /^.*(через|спустя|засеки|засечь)\s?([0-9]+)?\s?(#{TIME_RANGES.keys.join('|')}).*$/
 
   step :prepare_string
-  step :parse_weekdays
-  step :parse_relative_time
-  step :add_explanation
+  pass :parse_weekdays
+  pass :parse_relative_time
+  pass :add_explanation
 
   private
 
   def prepare_string(ctx, string:, **)
-    ctx[:string] = string.downcase
+    ctx[:string] = string.downcase.tap { |it| debugify(ctx, :preprocess_orig_string, it) }
   end
 
   def parse_weekdays(ctx, string:, **)
     weekday = string.split.find { |w| WEEKDAYS_MAP.key? w }
 
     ctx[:explanation] = Date.today.next_occurring(WEEKDAYS_MAP[weekday]) if weekday
-    true
   end
   
   def parse_relative_time(ctx, string:, **)
@@ -47,13 +46,10 @@ class Reminder::Operation::Preprocess < ApplicationOperation
       datetime = (num * unit).from_now
       ctx[:explanation] = datetime.strftime("%Y-%m-%d %H:%M")
     end
-    true
   end
 
   def add_explanation(ctx, explanation: nil, string:, **)
-    return true unless explanation
-    puts "#{string} (#{explanation})"
-    ctx[:string] = "#{string} (#{explanation})"
-    true
+    return unless explanation
+    ctx[:string] = "#{string} (#{explanation})".tap { |it| debugify(ctx, :preprocessed_string, it) }
   end
 end

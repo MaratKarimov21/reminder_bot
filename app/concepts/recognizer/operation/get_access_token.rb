@@ -21,6 +21,7 @@ module Recognizer
         return unless response.ok?
 
         ctx[:access_token] = Rails.cache.fetch("recognizer_access_token", expires_in: 1.hour) do
+          ctx[:debug][:recognizer_access_token_requested] = true
           response.parsed_response["access_token"]
         end
       end
