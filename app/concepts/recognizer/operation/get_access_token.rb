@@ -20,7 +20,7 @@ module Recognizer
         response = HTTParty.post(url, body: body, headers: headers)
         return unless response.ok?
 
-        ctx[:access_token] = Rails.cache.fetch("parser_access_token", expires_in: 1.hour) do
+        ctx[:access_token] = Rails.cache.fetch("recognizer_access_token", expires_in: 1.hour) do
           response.parsed_response["access_token"]
         end
       end

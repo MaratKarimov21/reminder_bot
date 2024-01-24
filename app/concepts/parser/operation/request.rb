@@ -42,8 +42,8 @@ module Parser
       end
 
       def send_request(ctx, body:, headers:, **)
-        response = HTTParty.post(Rails.application.credentials.dig(:sber, :chat_url),
-                                 body: body, headers: headers)
+        response = HTTParty.post(Rails.application.credentials.dig(:sber, :chat_url), body: body, headers: headers)
+
         ctx[:response] = response.ok? ? response.body : nil
       end
 

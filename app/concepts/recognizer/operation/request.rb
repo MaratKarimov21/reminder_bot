@@ -1,7 +1,7 @@
 class Recognizer::Operation::Request < ApplicationOperation
   step :validate
   step Subprocess(Recognizer::Operation::GetAccessToken)
-  step Subprocess(Telegram::Operation::DownloadFile), in: :file_id, out: { binary: :file }
+  step Subprocess(Telegram::Operation::DownloadFile), In() => [ :file_id ], Out() => { binary: :file }
   step :prepare_headers
   step :send_request
   step :extract_response
@@ -17,7 +17,7 @@ class Recognizer::Operation::Request < ApplicationOperation
   end
 
   def send_request(ctx, file:, headers:, **)
-    ctx[:response] = HTTParty.post(Rails.application.credentials.dig(:sber, :recognizer_url),
+    ctx[:response] = HTTParty.post(Rails.application.credentials.dig(:sber, :recognize_url),
                                    body: file, headers: headers).body
   end
 
