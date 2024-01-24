@@ -4,6 +4,9 @@ class Reminder::Operation::Create < ApplicationOperation
   step Subprocess(Reminder::Operation::Preprocess), In() => { message: :string }, Out() => { string: :message }
   step Subprocess(Parser::Operation::Request), In() => [ :message ], Out() => { reply: :reminder_data }
   step Model(User, :find_by, :username)
+  step :validate_reminder_data
+  fail :handle_invalid_reminder
+  step :schedule_reminder
   step :create_reminder
   step :prepare_message
 
@@ -18,14 +21,27 @@ class Reminder::Operation::Create < ApplicationOperation
     ctx[:username] = params[:username]
   end
 
-  def create_reminder(ctx, reminder_data:, **)
-    # return unless reminder_data.is_a?
-    datetime = DateTime.parse("#{reminder_data["date"]} #{reminder_data["time"]} MSK") # TODO: Add timezone
-    ctx[:debug][:parsed_datetime] = datetime
-    ReminderJob.set(wait_until: datetime).perform_later(ctx[:model], reminder_data["action"])
+  def validate_reminder_data(ctx, reminder_data:, **)
+    return unless reminder_data.is_a?(Hash)
+    reminder_data["date"].present? && reminder_data["time"].present? && reminder_data["action"].present?
   end
 
-  def prepare_message(ctx, reminder_data:, **)
-    ctx[:message] = "Напоминание создано: #{reminder_data["action"]} в #{reminder_data["time"]} #{reminder_data["date"]}"
+  def handle_invalid_reminder(ctx, reminder_data, **)
+    ctx[:message] = "Неверные данные: #{reminder_data}"
+  end
+
+  def schedule_reminder(ctx, reminder_data:, **)
+    datetime = DateTime.parse("#{reminder_data["date"]} #{reminder_data["time"]} MSK") # TODO: Add timezone
+    ctx[:debug][:parsed_datetime] = datetime
+    ctx[:job_id] = ReminderJob.set(wait_until: datetime).perform_later(ctx[:model], reminder_data["action"]).job_id
+  end
+
+  def create_reminder(ctx, model:, reminder_data:, job_id:, **)
+    job = GoodJob::Job.find(job_id)
+    ctx[:reminder] = model.reminders.create(job: job, action: reminder_data["action"])
+  end
+
+  def prepare_message(ctx, reminder:, **)
+    ctx[:message] = "Напоминание создано: #{reminder.action} в #{reminder.scheduled_at}"
   end
 end

@@ -35,6 +35,7 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     #   signal, (ctx, _) = result
     #   puts signal.inspect
     # end
+    GoodJob::Job
   end
 
   def start_params
