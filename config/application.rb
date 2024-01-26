@@ -23,5 +23,6 @@ module ReminderBot
     config.i18n.default_locale = :ru
     config.active_record.default_timezone = :local
     config.active_job.queue_adapter = :good_job
+    config.telegram_updates_controller.session_store = :file_store, Rails.root.join('tmp/session_store')
   end
 end
