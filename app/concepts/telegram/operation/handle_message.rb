@@ -3,6 +3,7 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
   REGULAR_REMINDER_WORDS = %w[каждый каждая каждое каждые каждую ежеминутно
                               ежежечасно ежедневно еженедельно ежемесячно ежегодно]
   REGULAR_REMINDER_REGEX = /\b(?:#{REGULAR_REMINDER_WORDS.join('|')})\b/i
+  BIRTHDAY_REMINDER_REGEX = /\b(?:день рождения|дня рождения|дней рождения|день рождение| др )\b/i
 
   step :prepare_create_params
   pass Subprocess(Recognizer::Operation::Request),
@@ -24,7 +25,9 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
   end
 
   def decide_entity(ctx, message:, **)
-    REGULAR_REMINDER_REGEX.match?(message) ? RegularReminder::Operation::Create : Reminder::Operation::Create
+    return RegularReminder::Operation::Create if REGULAR_REMINDER_REGEX.match?(message)
+    return Birthday::Operation::Create if BIRTHDAY_REMINDER_REGEX.match?(message)
+    Reminder::Operation::Create
   end
 
 end

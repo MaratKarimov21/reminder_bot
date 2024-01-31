@@ -14,8 +14,8 @@ module Parser
         return unless message
         ctx[:body] = {
           "model": "GigaChat:latest",
-          "temperature": 0.87,
-          "top_p": 0.47,
+          "temperature": 2,
+          # "top_p": 0.47,
           "n": 1,
           "max_tokens": 512,
           "repetition_penalty": 1.07,

@@ -17,8 +17,14 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     respond_with :message, text: "Запланированные напоминания", reply_markup: { inline_keyboard: result[:reply_markup] }
   end
 
+  def birthdays!
+    result = Telegram::Operation::BuildBirthdaysList.wtf?(params: { username: from["username"] })
+
+    respond_with :message, text: "Дни рождения", reply_markup: { inline_keyboard: result[:reply_markup] }
+  end
+
   def message(message)
-    # Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
+    Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
     # puts message["file_id"].inspect
     # 'https://api.telegram.org/file/bot6873736492:AAFzurnuY2RKjCYSymvl5ReUYi6TF-OGAWI/voice/file_0.oga'
 
@@ -28,8 +34,13 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
       username: from["username"]
     })
     if result.success?
-      respond_with :message, text: result[:result_message] || "fail"
-
+      respond_with :message, text: result[:result_message]#, reply_markup: {
+        # inline_keyboard: [ [
+        #                      { text: "Ok", callback_data: "accept_reminder:#{result[:reminder].id}" },
+        #                      { text: "Cancel", callback_data: "cancel_reminder:#{result[:reminder].id}" },
+        #                      { text: "Edit", callback_data: "edit_reminder:#{result[:reminder].id}" }
+        #                    ] ]
+      # }
     else
       signal, (ctx, _) = result
       # puts signal.inspect
@@ -64,6 +75,23 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
                           { text: "Edit", callback_data: "edit_reminder:#{reminder.id}" }
                         ] ]
     }
+  end
+
+  def view_birthday_callback_query(id, *args)
+    birthday = Birthday.find(id)
+    edit_message :text, text: "#{birthday.person} #{birthday.date.strftime("%d.%m.%Y")}", reply_markup: {
+      inline_keyboard: [ [
+                          { text: "Delete", callback_data: "delete_birthday:#{birthday.id}" }
+                        ] ]
+    }
+  end
+
+  def delete_birthday_callback_query(id, *args)
+    birthday = Birthday.find(id)
+    birthday.destroy
+    result = Telegram::Operation::BuildBirthdaysList.wtf?(params: { username: from["username"] })
+
+    edit_message :text, text: "Дни рождения", reply_markup: { inline_keyboard: result[:reply_markup] }
   end
 
   private
