@@ -23,5 +23,7 @@ class Recognizer::Operation::Request < ApplicationOperation
 
   def extract_response(ctx, response:, **)
     ctx[:reply] = JSON.parse(response)["result"][0].tap { |it| debugify(ctx, :recognizer_reply, it) }
+    debugger
+    true
   end
 end

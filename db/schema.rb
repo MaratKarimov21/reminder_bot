@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_01_24_194952) do
+ActiveRecord::Schema[7.0].define(version: 2024_01_30_174410) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -93,6 +93,17 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_24_194952) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "regular_reminders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.uuid "job_id"
+    t.string "action"
+    t.string "interval_type"
+    t.integer "interval", default: 1
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_regular_reminders_on_user_id"
+  end
+
   create_table "reminders", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.uuid "job_id", null: false
@@ -113,4 +124,5 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_24_194952) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "regular_reminders", "users"
 end

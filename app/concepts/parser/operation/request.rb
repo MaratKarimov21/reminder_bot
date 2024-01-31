@@ -10,7 +10,7 @@ module Parser
 
       private
 
-      def prepare_body(ctx, message:, **)
+      def prepare_body(ctx, message:, entity: :reminder, **)
         return unless message
         ctx[:body] = {
           "model": "GigaChat:latest",
@@ -24,7 +24,7 @@ module Parser
           "messages": [
             {
               "role": "system",
-              "content": I18n.t("chat.prompt",
+              "content": I18n.t("chat.#{entity}",
                                 today: Date.today,
                                 tomorrow: Date.tomorrow,
                                 time: Time.now.strftime("%H:%M"))
@@ -44,7 +44,7 @@ module Parser
       def send_request(ctx, body:, headers:, **)
         response = HTTParty.post(Rails.application.credentials.dig(:sber, :chat_url), body: body, headers: headers)
 
-        ctx[:response] = response.ok? ? response.body : nil
+        ctx[:response] = response.ok? ? response.body : nil.tap { debugify(ctx, :parser_error, response) }
       end
 
       def extract_response(ctx, response:, **)

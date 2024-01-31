@@ -86,3 +86,7 @@ gem "reform"
 gem "reform-rails"
 gem "dry-validation"
 gem "rubocop-rails-omakase"
+gem "chronic"
+gem "nickel"
+gem "tickle"
+
