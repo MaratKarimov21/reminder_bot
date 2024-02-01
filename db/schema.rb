@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_01_31_201636) do
+ActiveRecord::Schema[7.0].define(version: 2024_02_01_153022) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -18,7 +18,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_31_201636) do
   create_table "birthdays", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "person", null: false
-    t.datetime "date", null: false
+    t.date "date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_birthdays_on_user_id"
@@ -111,6 +111,16 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_31_201636) do
     t.index ["user_id"], name: "index_products_on_user_id"
   end
 
+  create_table "profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.time "morning_at"
+    t.time "afternoon_at"
+    t.time "evening_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_profiles_on_user_id"
+  end
+
   create_table "regular_reminders", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.uuid "job_id"
@@ -144,5 +154,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_31_201636) do
 
   add_foreign_key "birthdays", "users"
   add_foreign_key "products", "users"
+  add_foreign_key "profiles", "users"
   add_foreign_key "regular_reminders", "users"
 end

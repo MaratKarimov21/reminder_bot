@@ -60,6 +60,12 @@ class Reminder::Operation::Preprocess < ApplicationOperation
     [1, :year] => %w[год года годов лет]
   }.flat_map { |k, vs| vs.map { |v| { v => k } } }.reduce(&:merge)
 
+  TIMES_OF_DAY = {
+    morning_at: %w[утром утра],
+    afternoon_at: %w[днем дня],
+    evening_at: %w[вечером вечера]
+  }.flat_map { |k, vs| vs.map { |v| { v => k } } }.reduce(&:merge)
+
   RELATIVE_DAYS = {
     "сегодня" => Date.today,
     "завтра" => Date.tomorrow,
@@ -79,13 +85,13 @@ class Reminder::Operation::Preprocess < ApplicationOperation
   pass :parse_weekdays
   pass :parse_relative_time
   pass :parse_monthday
+  pass :parse_times_of_day
   pass :add_explanation
 
   private
 
   def prepare_string(ctx, string:, **)
-    ctx[:string] = string.downcase.tap { |it| debugify(ctx, :preprocess_orig_string, it) }
-    ctx[:explanation] = ""
+    ctx[:string] = string.downcase.squish.tap { |it| debugify(ctx, :preprocess_orig_string, it) }
   end
 
   def replace_numerals(ctx, string:, **)
@@ -100,7 +106,7 @@ class Reminder::Operation::Preprocess < ApplicationOperation
   def parse_relative_days(ctx, string:, **)
     relative_day = string.split.find { |w| RELATIVE_DAYS.key? w }
 
-    ctx[:explanation].concat(" ", RELATIVE_DAYS[relative_day].strftime("%Y-%m-%d")) if relative_day
+    ctx[:explanation_date] = RELATIVE_DAYS[relative_day].strftime("%Y-%m-%d") if relative_day
   end
 
   def parse_regular_reminder(ctx, string:, **)
@@ -108,16 +114,16 @@ class Reminder::Operation::Preprocess < ApplicationOperation
       num = m[2] ? m[2].to_i : 1
       unit = TIME_RANGES[m[3]][1]
 
-      ctx[:explanation].concat(" ", "type: #{unit}, interval: #{num}")
+      ctx[:explanation_regular] = "type: #{unit}, interval: #{num}"
     end
   end
 
   def parse_weekdays(ctx, string:, **)
     weekday = string.split.find { |w| WEEKDAYS_MAP.key? w }
     return unless weekday
-    ctx[:explanation].concat(" ", Date.today.next_occurring(WEEKDAYS_MAP[weekday]).to_s)
+    ctx[:explanation_date] = Date.today.next_occurring(WEEKDAYS_MAP[weekday]).to_s
     return unless EVERY_REGEX.match?(string)
-    ctx[:explanation].concat(" ", "type: week")
+    ctx[:explanation_regular] = "type: week"
   end
   
   def parse_relative_time(ctx, string:, **)
@@ -125,7 +131,8 @@ class Reminder::Operation::Preprocess < ApplicationOperation
       num = m[2] ? m[2].to_i : 1
       unit = TIME_RANGES[m[3]]
       datetime = (num * unit[0].send(unit[1])).from_now
-      ctx[:explanation].concat(" ", datetime.strftime("%Y-%m-%d %H:%M"))
+      ctx[:explanation_date] = datetime.strftime("%Y-%m-%d")
+      ctx[:explanation_time] = datetime.strftime("%H:%M")
     end
   end
 
@@ -134,13 +141,20 @@ class Reminder::Operation::Preprocess < ApplicationOperation
       this_month_occurrence = Date.today.at_beginning_of_month + m[1].to_i - 1
       next_month_occurrence = this_month_occurrence.next_month
       date = this_month_occurrence.past? ? next_month_occurrence : this_month_occurrence
-      ctx[:explanation].concat(" ", date.to_s, " ", "type: monthday")
+      ctx[:explanation_date] = date.to_s
+      ctx[:explanation_regular] = "type: monthday"
     end
-
   end
 
-  def add_explanation(ctx, explanation: nil, string:, **)
-    return unless explanation
+  def parse_times_of_day(ctx, string:, tod_settings: Profile::DEFAULTS, **)
+    tod = string.split.find { |w| TIMES_OF_DAY.key? w }
+    return unless tod
+    ctx[:explanation_time] = tod_settings[TIMES_OF_DAY[tod]]
+  end
+
+  def add_explanation(ctx, explanation_date: nil, explanation_regular: nil, explanation_time: nil, string:, **)
+    explanation = "#{explanation_date} #{explanation_regular} #{explanation_time}".squish
+    return unless explanation.presence
     ctx[:string] = "#{string} (#{explanation})".tap { |it| debugify(ctx, :preprocessed_string, it) }
   end
 end

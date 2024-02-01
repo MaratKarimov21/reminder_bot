@@ -29,6 +29,11 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     respond_with :message, text: "Ваш список покупок", reply_markup: result[:reply_markup]
   end
 
+  def times_of_day_settings!
+    result = Telegram::Operation::BuildTimesOfDaySettings.wtf?(params: { username: from["username"] })
+    respond_with :message, text: "Настройки времени", reply_markup: result[:reply_markup]
+  end
+
   def message(message)
     Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
     # puts message["file_id"].inspect
@@ -41,7 +46,7 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     })
     if result.success?
       message = result[:message] || "fail"
-      reply_markup = result[:reply_markup] || reminder_reply_markup(result[:reminder])
+      reply_markup = result[:reply_markup] #|| reminder_reply_markup(result[:reminder])
       respond_with :message, text: result[:result_message], reply_markup: reply_markup
         # inline_keyboard: [ [
         #                      { text: "Ok", callback_data: "accept_reminder:#{result[:reminder].id}" },
@@ -110,9 +115,39 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
   end
 
   def clean_cart_callback_query(_,*args)
+
     current_user.products.where(in_cart: true).destroy_all
     reply_markup = Telegram::Operation::BuildProductsList.wtf?(params: { username: from["username"] })[:reply_markup]
     edit_message :reply_markup, reply_markup: reply_markup
+    answer_callback_query "Список очищен"
+  end
+
+  def set_morning_at_callback_query(time, *args)
+    current_user.profile.update(morning_at: time)
+    reply_markup = Telegram::Operation::BuildTimesOfDaySettings.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+    answer_callback_query "Установлено"
+  end
+
+  def set_afternoon_at_callback_query(time, *args)
+    current_user.profile.update(afternoon_at: time)
+    reply_markup = Telegram::Operation::BuildTimesOfDaySettings.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+    answer_callback_query "Установлено"
+  end
+
+  def set_morning_at_callback_query(time, *args)
+    current_user.profile.update(morning_at: time)
+    reply_markup = Telegram::Operation::BuildTimesOfDaySettings.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+    answer_callback_query "Установлено"
+  end
+
+  def set_evening_at_callback_query(time, *args)
+    current_user.profile.update(evening_at: time)
+    reply_markup = Telegram::Operation::BuildTimesOfDaySettings.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+    answer_callback_query "Установлено"
   end
 
   private

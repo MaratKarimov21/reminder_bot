@@ -1,0 +1,42 @@
+version: "3.4"
+
+x-app: &app_base
+  depends_on:
+    - db
+  build: .
+  environment:
+    - DATABASE_URL=postgres://postgres:password@db
+    - RAILS_ENV
+  volumes:
+    - ruby-bundle:/usr/local/bundle
+
+services:
+  db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  app:
+    <<: *app_base
+    stdin_open: true
+    tty: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: rake telegram:bot:poller BOT=reminder
+    # Needed to avoid redundant browser processes from puppeteer
+    # See: https://github.com/Studiosity/grover/issues/102
+    init: true
+  good_job:
+    <<: *app_base
+    depends_on:
+      - app
+    command: bundle exec good_job start --enable-cron
+
+volumes:
+  ruby-bundle:
+  db-data:

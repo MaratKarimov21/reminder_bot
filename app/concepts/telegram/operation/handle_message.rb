@@ -10,8 +10,10 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
   pass Subprocess(Recognizer::Operation::Request),
        Out() => ->(ctx, **) { ctx[:reply] ? { message: ctx[:reply] } : {} }
   step Model(User, :find_by, :username)
+  step :prepare_tod_settings
   step Subprocess(Reminder::Operation::Preprocess),
        In() => { message: :string },
+       In() => [:tod_settings],
        Out() => { string: :message }
   step Nested(:decide_entity)
 
@@ -23,6 +25,10 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
     ctx[:file_id] = params[:file_id]
     ctx[:message] = params[:message]
     ctx[:username] = params[:username]
+  end
+
+  def prepare_tod_settings(ctx, model:, **)
+    ctx[:tod_settings] = model.profile.settings
   end
 
   def decide_entity(ctx, message:, **)

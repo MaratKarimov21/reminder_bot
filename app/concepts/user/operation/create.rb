@@ -3,4 +3,11 @@ class User::Operation::Create < ApplicationOperation
   step Contract::Build(constant: User::Contract::Create)
   step Contract::Validate()
   step Contract::Persist()
+  step :create_profile
+
+  private
+
+  def create_profile(ctx, model:, **)
+    ctx[:profile] = model.build_profile(Profile::DEFAULTS).save
+  end
 end
