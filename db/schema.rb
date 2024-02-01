@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_01_31_165709) do
+ActiveRecord::Schema[7.0].define(version: 2024_01_31_201636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -102,6 +102,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_31_165709) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "products", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.boolean "in_cart", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_products_on_user_id"
+  end
+
   create_table "regular_reminders", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.uuid "job_id"
@@ -134,5 +143,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_31_165709) do
   end
 
   add_foreign_key "birthdays", "users"
+  add_foreign_key "products", "users"
   add_foreign_key "regular_reminders", "users"
 end

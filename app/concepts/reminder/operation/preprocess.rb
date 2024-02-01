@@ -70,7 +70,7 @@ class Reminder::Operation::Preprocess < ApplicationOperation
   REGULAR_REMINDER_REGEX = /^.*(#{REGULAR_REMINDER_WORDS.join('|')})\s?([0-9]+)?\s?(#{TIME_RANGES.keys.join('|')}).*$/
   EVERY_REGEX = /\b(?:#{REGULAR_REMINDER_WORDS.join('|')})\b/i
   MONTHDAY_REGEX = /^.* ([0-9]{1,2}) (числа|числам|число|числе).*$/
-  RELATIVE_TIME_REGEXP = /^.*(через|спустя|засеки|засечь|таймер|таймер на| на)\s?([0-9]+)?\s?(#{TIME_RANGES.keys.join('|')}).*$/
+  RELATIVE_TIME_REGEXP = /^.*(через|спустя|засеки|засечь|таймер|таймер на| на )\s?([0-9]+)?\s?(#{TIME_RANGES.keys.join('|')}).*$/
 
   step :prepare_string
   pass :replace_numerals

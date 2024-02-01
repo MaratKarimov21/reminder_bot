@@ -89,4 +89,5 @@ gem "rubocop-rails-omakase"
 gem "chronic"
 gem "nickel"
 gem "tickle"
+gem "redcarpet"
 

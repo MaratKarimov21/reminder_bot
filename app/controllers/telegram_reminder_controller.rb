@@ -23,6 +23,12 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     respond_with :message, text: "Дни рождения", reply_markup: { inline_keyboard: result[:reply_markup] }
   end
 
+  def cart!
+    result = Telegram::Operation::BuildProductsList.wtf?(params: { username: from["username"] })
+    puts result[:reply_markup]
+    respond_with :message, text: "Ваш список покупок", reply_markup: result[:reply_markup]
+  end
+
   def message(message)
     Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
     # puts message["file_id"].inspect
@@ -34,7 +40,9 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
       username: from["username"]
     })
     if result.success?
-      respond_with :message, text: result[:result_message]#, reply_markup: {
+      message = result[:message] || "fail"
+      reply_markup = result[:reply_markup] || reminder_reply_markup(result[:reminder])
+      respond_with :message, text: result[:result_message], reply_markup: reply_markup
         # inline_keyboard: [ [
         #                      { text: "Ok", callback_data: "accept_reminder:#{result[:reminder].id}" },
         #                      { text: "Cancel", callback_data: "cancel_reminder:#{result[:reminder].id}" },
@@ -94,7 +102,30 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     edit_message :text, text: "Дни рождения", reply_markup: { inline_keyboard: result[:reply_markup] }
   end
 
+  def toggle_in_cart_callback_query(id, *args)
+    product = Product.find(id)
+    product.update(in_cart: !product.in_cart)
+    reply_markup = Telegram::Operation::BuildProductsList.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+  end
+
+  def clean_cart_callback_query(_,*args)
+    current_user.products.where(in_cart: true).destroy_all
+    reply_markup = Telegram::Operation::BuildProductsList.wtf?(params: { username: from["username"] })[:reply_markup]
+    edit_message :reply_markup, reply_markup: reply_markup
+  end
+
   private
+
+  def reminder_reply_markup(reminder)
+    {
+      inline_keyboard: [ [
+                           { text: "Ok", callback_data: "accept_reminder:#{reminder.id}" },
+                           { text: "Cancel", callback_data: "cancel_reminder:#{reminder.id}" },
+                           { text: "Edit", callback_data: "edit_reminder:#{reminder.id}" }
+                         ] ]
+    }
+  end
 
   def cancel_reminder(id)
     Reminder::Operation::Cancel.wtf?(params: { id: id })
@@ -104,5 +135,9 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     from.tap do |p|
       p[:telegram_id] = p.delete("id")
     end
+  end
+
+  def current_user
+    User.find_by(telegram_id: from["id"])
   end
 end
