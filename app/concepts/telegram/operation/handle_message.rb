@@ -6,7 +6,7 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
   BIRTHDAY_REMINDER_REGEX = /\b(?:день рождения|дня рождения|дней рождения|день рождение| др )\b/i
   PRODUCT_REGEX = /\b(?:корзина|корзину|корзине|список продуктов|список покупок| в список|^купить|^нужно купить)\b/i
 
-  step :prepare_create_params
+  step :prepare_params
   pass Subprocess(Recognizer::Operation::Request),
        Out() => ->(ctx, **) { ctx[:reply] ? { message: ctx[:reply] } : {} }
   step Model(User, :find_by, :username)
@@ -20,7 +20,7 @@ class Telegram::Operation::HandleMessage < ApplicationOperation
 
   private
 
-  def prepare_create_params(ctx, params:, **)
+  def prepare_params(ctx, params:, **)
     return unless params[:username]
     ctx[:file_id] = params[:file_id]
     ctx[:message] = params[:message]

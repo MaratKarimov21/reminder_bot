@@ -4,5 +4,4 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "articles#index"
   telegram_webhook TelegramReminderController, :reminder
-  telegram_webhook TelegramReminderController, :production_reminder
 end
