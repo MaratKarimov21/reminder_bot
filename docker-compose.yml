@@ -6,7 +6,7 @@ x-app: &app_base
   build: .
   environment:
     - DATABASE_URL=postgres://postgres:password@db
-    - RAILS_ENV
+    - RAILS_ENV=production
   volumes:
     - ruby-bundle:/usr/local/bundle
 
