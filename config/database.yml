@@ -82,5 +82,5 @@ test:
 production:
   <<: *default
   database: reminder_bot_production
-  username: reminder_bot
-  password: <%= ENV["REMINDER_BOT_DATABASE_PASSWORD"] %>
+#  username: reminder_bot
+#  password: <%#= ENV["REMINDER_BOT_DATABASE_PASSWORD"] %>

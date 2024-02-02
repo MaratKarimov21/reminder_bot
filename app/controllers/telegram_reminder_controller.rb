@@ -7,20 +7,24 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     result = ::User::Operation::Create.wtf?(params: start_params)
 
     if result.success?
-      respond_with :message, text: 'Hello!'
+      respond_with :message, text: I18n.t("telegram.start")
     end
+  end
+
+  def help!(*)
+    respond_with :message, text: I18n.t("telegram.start")
   end
 
   def reminders!
     result = Telegram::Operation::BuildRemindersList.wtf?(params: { username: from["username"] })
 
-    respond_with :message, text: "Запланированные напоминания", reply_markup: { inline_keyboard: result[:reply_markup] }
+    respond_with :message, text: "Запланированные напоминания", reply_markup: result[:reply_markup]
   end
 
   def birthdays!
     result = Telegram::Operation::BuildBirthdaysList.wtf?(params: { username: from["username"] })
 
-    respond_with :message, text: "Дни рождения", reply_markup: { inline_keyboard: result[:reply_markup] }
+    respond_with :message, text: "Дни рождения", reply_markup: result[:reply_markup]
   end
 
   def cart!
@@ -36,8 +40,6 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
 
   def message(message)
     Telegram.bots[:reminder].send_chat_action(chat_id: message["chat"]["id"], action: "typing")
-    # puts message["file_id"].inspect
-    # 'https://api.telegram.org/file/bot6873736492:AAFzurnuY2RKjCYSymvl5ReUYi6TF-OGAWI/voice/file_0.oga'
 
     result =  Telegram::Operation::HandleMessage.wtf?(params: {
       file_id: message.dig("voice", "file_id"),
@@ -45,21 +47,11 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
       username: from["username"]
     })
     if result.success?
-      message = result[:message] || "fail"
-      reply_markup = result[:reply_markup] #|| reminder_reply_markup(result[:reminder])
-      respond_with :message, text: result[:result_message], reply_markup: reply_markup
-        # inline_keyboard: [ [
-        #                      { text: "Ok", callback_data: "accept_reminder:#{result[:reminder].id}" },
-        #                      { text: "Cancel", callback_data: "cancel_reminder:#{result[:reminder].id}" },
-        #                      { text: "Edit", callback_data: "edit_reminder:#{result[:reminder].id}" }
-        #                    ] ]
-      # }
+      respond_with :message, text: result[:result_message], reply_markup: result[:reply_markup]
     else
-      signal, (ctx, _) = result
-      # puts signal.inspect
       respond_with :message, text: result[:result_message] || "fail"
     end
-    respond_with :message, text: JSON.pretty_generate(result[:debug])
+    respond_with :message, text: JSON.pretty_generate(result[:debug]) if ENV.fetch("DEBUG_MESSAGE", false)
   end
 
 
@@ -79,15 +71,32 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
     edit_message :text, text: "Напоминание отменено"
   end
 
+  def accept_regular_reminder_callback_query(*args)
+    edit_message :reply_markup, inline_keyboard: []
+  end
+
+  def edit_regular_reminder_callback_query(id, *args)
+    cancel_regular_reminder(id)
+    edit_message :reply_markup, inline_keyboard: []
+    edit_message :text, text: "Повторите ваш запрос"
+  end
+
+  def cancel_regular_reminder_callback_query(id, *args)
+    cancel_regular_reminder(id)
+    edit_message :reply_markup, inline_keyboard: []
+    edit_message :text, text: "Напоминание отменено"
+  end
+
   def view_reminder_callback_query(id, *args)
     reminder = Reminder.find(id)
-    respond_with :message, text: reminder.action, reply_markup: {
-      inline_keyboard: [ [
-                          { text: "Ok", callback_data: "accept_reminder:#{reminder.id}" },
-                          { text: "Cancel", callback_data: "cancel_reminder:#{reminder.id}" },
-                          { text: "Edit", callback_data: "edit_reminder:#{reminder.id}" }
-                        ] ]
-    }
+    reply_markup = Telegram::Operation::BuildReminderReplyMarkup.wtf?(reminder: reminder)[:reply_markup]
+    respond_with :message, text: reminder.action, reply_markup: reply_markup
+  end
+
+  def view_regular_reminder_callback_query(id, *args)
+    reminder = RegularReminder.find(id)
+    reply_markup = Telegram::Operation::BuildReminderReplyMarkup.wtf?(reminder: reminder)[:reply_markup]
+    respond_with :message, text: reminder.action, reply_markup: reply_markup
   end
 
   def view_birthday_callback_query(id, *args)
@@ -152,18 +161,12 @@ class TelegramReminderController < Telegram::Bot::UpdatesController
 
   private
 
-  def reminder_reply_markup(reminder)
-    {
-      inline_keyboard: [ [
-                           { text: "Ok", callback_data: "accept_reminder:#{reminder.id}" },
-                           { text: "Cancel", callback_data: "cancel_reminder:#{reminder.id}" },
-                           { text: "Edit", callback_data: "edit_reminder:#{reminder.id}" }
-                         ] ]
-    }
-  end
-
   def cancel_reminder(id)
     Reminder::Operation::Cancel.wtf?(params: { id: id })
+  end
+
+  def cancel_regular_reminder(id)
+    RegularReminder::Operation::Cancel.wtf?(params: { id: id })
   end
 
   def start_params

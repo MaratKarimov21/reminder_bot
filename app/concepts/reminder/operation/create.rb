@@ -7,6 +7,7 @@ class Reminder::Operation::Create < ApplicationOperation
   step :parse_date_time
   step :schedule_reminder
   step :create_reminder
+  step Subprocess(Telegram::Operation::BuildReminderReplyMarkup)
   step :prepare_message
 
   private
@@ -34,6 +35,6 @@ class Reminder::Operation::Create < ApplicationOperation
   end
 
   def prepare_message(ctx, reminder:, **)
-    ctx[:result_message] = "Напоминание создано: #{reminder.action} в #{reminder.scheduled_at}"
+    ctx[:result_message] = "Напоминание создано: #{reminder.action} в #{reminder.scheduled_at.strftime("%d.%m.%Y %H:%M")}"
   end
 end

@@ -10,6 +10,10 @@ class Telegram::Operation::BuildBirthdaysList < ApplicationOperation
   end
 
   def build_reply_markup(ctx, birthdays:, **)
-    ctx[:reply_markup] = birthdays.map { |b| [{ text: "#{b.person} #{b.date.strftime("%d.%m.%Y")}", callback_data: "view_birthday:#{b.id}" }] }
+    ctx[:reply_markup] = {
+      inline_keyboard: birthdays.map do |b|
+        [{ text: "#{b.person} #{b.date.strftime("%d.%m.%Y")}", callback_data: "view_birthday:#{b.id}" }]
+      end
+    }
   end
 end

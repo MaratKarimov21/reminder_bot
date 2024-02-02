@@ -90,4 +90,5 @@ gem "chronic"
 gem "nickel"
 gem "tickle"
 gem "redcarpet"
+gem "dotenv-rails"
 

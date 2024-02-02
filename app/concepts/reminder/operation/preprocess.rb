@@ -62,7 +62,7 @@ class Reminder::Operation::Preprocess < ApplicationOperation
 
   TIMES_OF_DAY = {
     morning_at: %w[утром утра],
-    afternoon_at: %w[днем дня],
+    afternoon_at: %w[днем дня днём],
     evening_at: %w[вечером вечера]
   }.flat_map { |k, vs| vs.map { |v| { v => k } } }.reduce(&:merge)
 

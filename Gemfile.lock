@@ -94,6 +94,10 @@ GEM
     disposable (0.6.3)
       declarative (>= 0.0.9, < 1.0.0)
       representable (>= 3.1.1, < 4)
+    dotenv (2.8.1)
+    dotenv-rails (2.8.1)
+      dotenv (= 2.8.1)
+      railties (>= 3.2)
     dry-configurable (1.1.0)
       dry-core (~> 1.0, < 2)
       zeitwerk (~> 2.6)
@@ -375,6 +379,7 @@ DEPENDENCIES
   capybara
   chronic
   debug
+  dotenv-rails
   dry-validation
   good_job (~> 3.22)
   httparty (~> 0.21.0)

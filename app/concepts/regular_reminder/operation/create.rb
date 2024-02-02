@@ -10,6 +10,7 @@ class RegularReminder::Operation::Create < ApplicationOperation
   step :create_reminder
   step :schedule_reminder
   step :update_reminder
+  step Subprocess(Telegram::Operation::BuildReminderReplyMarkup)
   step :prepare_message
 
   private
@@ -50,6 +51,6 @@ class RegularReminder::Operation::Create < ApplicationOperation
   end
 
   def prepare_message(ctx, reminder:, **)
-    ctx[:result_message] = "Напоминание создано: #{reminder.action} в #{reminder.scheduled_at} (#{reminder.interval_type} #{reminder.interval})"
+    ctx[:result_message] = "Напоминание создано: #{reminder.action} #{reminder.frequency}"
   end
 end
