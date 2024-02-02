@@ -27,7 +27,7 @@ services:
       - "3000:3000"
     volumes:
       - .:/app
-    command: rake telegram:bot:poller BOT=reminder
+    command: rake telegram:bot:poller
   good_job:
     <<: *app_base
     depends_on:
