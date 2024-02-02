@@ -28,9 +28,6 @@ services:
     volumes:
       - .:/app
     command: rake telegram:bot:poller BOT=reminder
-    # Needed to avoid redundant browser processes from puppeteer
-    # See: https://github.com/Studiosity/grover/issues/102
-    init: true
   good_job:
     <<: *app_base
     depends_on:
