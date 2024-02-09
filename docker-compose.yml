@@ -20,6 +20,7 @@ services:
   app:
     <<: *app_base
     stdin_open: true
+    restart: unless-stopped
     tty: true
     ports:
       - "3000:3000"
