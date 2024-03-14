@@ -1,24 +1,12 @@
-# README
+# Reminder bot
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+[Ссылка на телеграм бота](https://t.me/all_reminders_bot)
 
-Things you may want to cover:
+### Описание проекта
 
-* Ruby version
+Это телеграм бот который поможет:
+- установить напоминание текстом или голосом
+- заполнить список покупок с возможностью отметки купленных
+- запомнить дни даты дни рождений, получая уведомления о них
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Особенность проекта в том, что можно отправлять глосовые команды боту, формулируя их в свободной форме. Для того, чтобы выделить суть голосой команды мы сначала преобразуем ее в текст при помощи сервиса SaluteSpeech от Сбера. Затем этот текст мы обрабатываем при помощи GigaChat - генеративная языковая модель, разработанная Сбером. Нейросеть анализирует текст и определяет, когда и о чем нужно напомнить
